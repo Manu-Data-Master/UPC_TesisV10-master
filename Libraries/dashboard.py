@@ -212,7 +212,6 @@ def plot_arts_performance_radar(df_result, id_exercise, posfijo):
 
    return chart_list
 
-
 def get_articulacion_name(id_articulacion):
    dict_articulacion_nombre = {
       'right_elbow_angles': 'ángulo codo derecho',
