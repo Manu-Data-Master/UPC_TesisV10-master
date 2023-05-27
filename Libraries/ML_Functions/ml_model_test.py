@@ -39,10 +39,10 @@ def img_model_test(image, model):
         # Make Detections
         X = pd.DataFrame([row])
         body_language_class = model.predict(X)[0]
+        class_names = model.classes_.tolist()
         body_language_prob = model.predict_proba(X)[0]
-        #print(f'class: {body_language_class}, prob: {body_language_prob}')
 
-        return body_language_class, body_language_prob
+        return body_language_class, class_names, body_language_prob.tolist()
     
 def get_files_by_dir(dir, ext):
    c_whole_training = []
@@ -51,20 +51,20 @@ def get_files_by_dir(dir, ext):
          c_whole_training.append(file)
    return c_whole_training
 
-#if __name__ == '__main__':
 def main_function(image_path, model_weights):
-    #img = cv2.imread('./resource/imgs/test5.png')
-    #model_weights = './model_weights/weights_body_language.pkl'
-
     img = cv2.imread(image_path)
     
-    # Load Model.
+    # Load Model
     with open(model_weights, 'rb') as f:
         model = pickle.load(f)
 
     # Input image to test model predict. 
-    predict_class = img_model_test(img, model)[0]
-    class_prob = img_model_test(img, model)[1]
+    predict_class, class_names, class_prob = img_model_test(img, model)
 
-    #print(f'\nclass: {predict_class}, acc: {class_probbile}\n')
-    st.success('class: {}, acc: {}'.format(predict_class, class_prob), icon='🎯')
+    col_predict_class, col_class_prob = st.columns(2)
+    with col_predict_class:
+        st.success('CLASS: {}'.format(predict_class), icon='🔠')
+    with col_class_prob:
+        st.success('ACCURACY:', icon='🎯')
+        for cl_nme, cl_prb in zip(class_names, class_prob):
+            st.text("{:.2%} : {}".format(cl_prb, cl_nme))
