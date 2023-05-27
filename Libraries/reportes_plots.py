@@ -1,6 +1,8 @@
 import plotly.express as px
 import streamlit as st
 from sklearn import linear_model
+import pandas as pd
+from datetime import datetime
 
 def summary_time_plot(df_whole_training, y_column, y_label, barmode, n_palette):
 
@@ -36,23 +38,45 @@ def scatter_plot(df_whole_training):
         plot_bgcolor="#444",
         paper_bgcolor="#444",
         font_size=16,
+        xaxis=dict(showgrid=False),
+        #yaxis=dict(showgrid=False)
     )
 
     return fig
 
 def regression_plot(df_whole_training, y_column):
-        df_whole_training = df_whole_training[[ 'Date_Start', y_column]]
-        df_whole_training = df_whole_training.groupby(['Date_Start'], as_index=False)[y_column].sum()
-        df_whole_training = df_whole_training.round(2)
-        st.dataframe(df_whole_training)
-        fig = px.line(df_whole_training, x='Date_Start', y=y_column, text=y_column, markers=True, color_discrete_sequence =['cyan'])
-       
-        fig.update_layout(
-            title = 'WORKOUT TRAINING TIME by EXERCISE ROUTINE - ',
-            xaxis_tickformat = '%d %B (%a)<br>%Y',
-            plot_bgcolor="#444",
-            paper_bgcolor="#444",
-            font_size=16,
 
-        )
-        return fig
+    df_whole_training = df_whole_training[['Date_Start', y_column]]
+    df_whole_training = df_whole_training.groupby(['Date_Start'], as_index=False)[y_column].sum()
+    df_whole_training = df_whole_training.round(2)
+    #st.dataframe(df_whole_training)
+    #fig = px.line(df_whole_training, x='Date_Start', y=y_column, text=y_column, markers=True, color_discrete_sequence =['cyan'])
+
+
+    df_whole_training['index'] = df_whole_training.index
+    #datelist = pd.date_range(datetime.today(), periods=df_whole_training.shape[0]).tolist()
+
+    fig = px.scatter(df_whole_training,
+                    # x='Date_Start',
+                    x = 'index' ,
+                    y=y_column, 
+                    text=y_column,
+                    color=y_column,
+                    color_discrete_sequence = px.colors.sequential.Plotly3, 
+                    trendline="ols", 
+                    trendline_scope="overall",
+                    trendline_color_override="cyan",
+                    )
+
+    fig.update_traces(marker={'size': 50, })
+    fig.update_layout(
+        title = 'WORKOUT TRAINING TIME by EXERCISE ROUTINE - ',
+        #xaxis_tickformat = '%d %B (%a)<br>%Y',
+        plot_bgcolor="#333",
+        paper_bgcolor="#333",
+        font_size=16,
+        xaxis=dict(showgrid=False),
+        #yaxis=dict(showgrid=False)
+    )
+
+    return fig
