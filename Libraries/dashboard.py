@@ -4,10 +4,8 @@ import plotly.graph_objs as go
 import plotly.express as px
 import pandas as pd
 import numpy as np
-import time
 import matplotlib.pyplot as plt
-import seaborn as sns
-
+import matplotlib as mpl
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
@@ -44,7 +42,26 @@ def plot_articulacion_performance_by_exerc(id_articulacion, id_exercise, df_resu
 
    x = df_result_plot["pose_merged_time"].values.tolist()
    y_trainer = df_result_plot[(id_articulacion+posfijo+'_trainer')].values.tolist()
-   y_user = df_result_plot[(id_articulacion+posfijo+'_user')].values.tolist()    
+   y_user = df_result_plot[(id_articulacion+posfijo+'_user')].values.tolist()
+   
+   ###############################################
+   correlation_trainer_user = np.corrcoef(y_trainer, y_user)[0][1]
+
+   fig2_corr, ax = plt.subplots(figsize=(20, 1))
+   fig2_corr.patch.set_alpha(0.0)
+   ax.xaxis.label.set_color('white')
+   ax.tick_params(axis='x', colors='white')
+   fig2_corr.subplots_adjust(bottom=0.3)
+
+   cmap = mpl.cm.coolwarm
+   norm = mpl.colors.Normalize(vmin=-1, vmax=1)
+
+   fig2_corr.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+                cax=ax, orientation='horizontal')
+   ax.plot([correlation_trainer_user]*2, [0, 1], 'w', color='#000', marker='o')
+
+   fig2_corr
+   ###############################################
 
    x_rev = x[::-1]
    y_trainer_upper_ds = [x + ds for x in y_trainer]
@@ -134,7 +151,7 @@ def plot_articulacion_performance_by_exerc(id_articulacion, id_exercise, df_resu
          ticktext = x
       )
    )
-   return fig
+   return fig, fig2_corr, correlation_trainer_user
 
 def plot_arts_performance_radar(df_result, id_exercise, posfijo):
    plot_filter = ['id_exercise', 'DateTime_Start', 'DateTime_End', 'count_pose', 'count_pose_g']

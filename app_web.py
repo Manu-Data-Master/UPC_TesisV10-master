@@ -41,6 +41,7 @@ st.session_state.starting_secs = 5
 st.session_state.landmark_visible = 0.2
 st.session_state.prob_change_color = 33
 st.session_state.prob_avance_pose = 20
+st.session_state.prob_avance_pose = False
 
 # 2. FUNCTIONS
 ##############
@@ -58,9 +59,9 @@ def load_exercise_metadata(id_exercise):
     st.session_state.articulaciones      = df.loc[df['id_exercise']==id_exercise, 'articulaciones'].values[0]
     st.session_state.posfijo             = df.loc[df['id_exercise']==id_exercise, 'posfijo'].values[0]
     st.session_state.n_poses             = df.loc[df['id_exercise']==id_exercise, 'n_poses'].values[0]
-    st.session_state.n_sets_default      = df.loc[df['id_exercise']==id_exercise, 'n_sets_default'].values[0]
-    st.session_state.n_reps_default      = df.loc[df['id_exercise']==id_exercise, 'n_reps_default'].values[0]
-    st.session_state.n_rest_time_default = df.loc[df['id_exercise']==id_exercise, 'n_rest_time_default'].values[0]
+    st.session_state.n_sets_default      = int(df.loc[df['id_exercise']==id_exercise, 'n_sets_default'].values[0])
+    st.session_state.n_reps_default      = int(df.loc[df['id_exercise']==id_exercise, 'n_reps_default'].values[0])
+    st.session_state.n_rest_time_default = int(df.loc[df['id_exercise']==id_exercise, 'n_rest_time_default'].values[0])
     st.session_state.detail              = df.loc[df['id_exercise']==id_exercise, 'detail'].values[0]
 
 #functions to use text to speech
@@ -102,10 +103,28 @@ def print_sidebar_main(id_exercise):
     with position_image:
         st.image(vista_gif, width=100)
     with position_text:
-        st.markdown("<hr/>", unsafe_allow_html=True)
-        st.markdown("**Vista:** " + st.session_state.vista, unsafe_allow_html=True)
-        st.markdown("**N° poses:** " + str(st.session_state.n_poses), unsafe_allow_html=True)
+        st.markdown("<br/><br/>", unsafe_allow_html=True)
+        st.text("Vista: {}".format(st.session_state.vista))
+        st.text("N° poses: {}".format(st.session_state.n_poses))
     st.sidebar.markdown("<hr/>", unsafe_allow_html=True)
+    
+    #####EXTRA OPTIONS
+    st.session_state.starting_secs = st.sidebar.slider('⏱️ SECONDS to start:', min_value=1, max_value=10,
+                                                             value = 5)
+    st.sidebar.markdown("<hr/>", unsafe_allow_html=True)
+    st.session_state.landmark_visible = st.sidebar.slider('👁️‍🗨️ PERCENT min allowed for Landmarks Visibility:', min_value=0.0, max_value=1.0,
+                                                                value = 0.2)
+    st.sidebar.markdown("<hr/>", unsafe_allow_html=True)
+    st.session_state.prob_change_color = st.sidebar.slider('🟣 PROBABILITY CLASS to change red-blue:', min_value=0, max_value=100,
+                                                                value = 33)
+    st.sidebar.markdown("<hr/>", unsafe_allow_html=True)
+    st.session_state.prob_avance_pose = st.sidebar.slider('💯 PROBABILITY CLASS to advance next pose:', min_value=0, max_value=100,
+                                                                value = 20)
+    st.sidebar.markdown("<hr/>", unsafe_allow_html=True)
+    st.session_state.developer_mode = st.sidebar.checkbox('Developer mode: Trainer costs [0-99]', value=False)
+    st.sidebar.markdown("<hr/>", unsafe_allow_html=True)
+    #####EXTRA OPTIONS
+
     placeholder_title.title('STARTER TRAINING - 🏋🏼‍♂️'+ st.session_state.short_name)
     st.markdown('---')
         
@@ -147,11 +166,11 @@ def update_counter_panel(season, count_pose_g, count_pose, count_rep, count_set)
         placeholder_pose_global.metric("🟡GLOBAL POSE DONE", str(count_pose_g) + " / " + str(st.session_state.total_poses), "+1 pose")
         
     elif season == "finished":
-        placeholder_status.markdown(util.font_size_px("🥇 FINISH !!!", 26), unsafe_allow_html=True)        
-        placeholder_set.metric(        "🟢SET DONE",         str(count_set)    + " / " + str(st.session_state.n_sets), "COMPLETED", delta_color="inverse" )
-        placeholder_rep.metric(        "🟢REPETITION DONE",  str(count_rep)    + " / " + str(st.session_state.n_reps), "COMPLETED", delta_color="inverse")
-        placeholder_pose.metric(       "🟢POSE DONE",        str(count_pose)   + " / " + str(st.session_state.n_poses),"COMPLETED", delta_color="inverse")
-        placeholder_pose_global.metric("🟢GLOBAL POSE DONE", str(count_pose_g) + " / " + str(st.session_state.total_poses), "COMPLETED", delta_color="inverse")
+        placeholder_status.markdown(util.font_size_px("🥇 EXERCISE FINISHED!", 26), unsafe_allow_html=True)        
+        placeholder_set.metric(        "🟢SET DONE",         str(count_set)    + " / " + str(st.session_state.n_sets), "COMPLETED" )
+        placeholder_rep.metric(        "🟢REPETITION DONE",  str(count_rep)    + " / " + str(st.session_state.n_reps), "COMPLETED")
+        placeholder_pose.metric(       "🟢POSE DONE",        str(count_pose)   + " / " + str(st.session_state.n_poses),"COMPLETED")
+        placeholder_pose_global.metric("🟢GLOBAL POSE DONE", str(count_pose_g) + " / " + str(st.session_state.total_poses), "COMPLETED")
         placeholder_trainer.image("./02. trainers/{}/images/{}1.png".format(id_exercise, id_exercise))
     else:
         placeholder_status.markdown(util.font_size_px("⚠️", 26), unsafe_allow_html=True)
@@ -279,33 +298,13 @@ name, authentication_status, username = authenticator.login("Login", "main")
 
 if authentication_status == False:
     st.error("Username/password is incorrect")
-#if authentication_status == None:
-#    st.warning("Please enter your username and password")
 
-placeholder_app_mode = st.empty()
-st.session_state.developer_mode = placeholder_app_mode.radio("Developer mode", (True, False), index = 1)
+#placeholder_app_mode = st.empty()
+#st.session_state.developer_mode = placeholder_app_mode.radio("Developer mode", (True, False), index = 1)
 
 ############# USER AUTHENTICATION ⬆️ #############
 
 if authentication_status:
-    ############# DEVELOPER MODE ⬇️ #############
-    
-    if st.session_state.developer_mode == True:
-        placeholder_app_mode.warning('🧑🏻‍🚀DEVELOPER MODE ACTIVATED : ⏱️Segundos para iniciar ejercicio= 0 ' +
-                                     '| 👁️‍🗨️Visibilidad Landmarks permitida=0 | 💯Prob permitida Avance Pose = 0% ' +
-                                     '| 🟣Prob permitida cambio color azul-rojo = 0% ' + 
-                                     '| ➖Trainer cost min = 0 | ➕Trainer cost max = 999', icon='⚠️')
-        st.session_state.starting_secs = 1
-        st.session_state.landmark_visible = 0
-        st.session_state.prob_change_color = 0
-        st.session_state.prob_avance_pose = 0
-    else:
-        placeholder_app_mode.empty()
-        st.session_state.starting_secs = st.session_state.starting_secs
-        st.session_state.landmark_visible = st.session_state.landmark_visible
-        st.session_state.prob_change_color = st.session_state.prob_change_color
-        st.session_state.prob_avance_pose = st.session_state.prob_avance_pose
-    ############# DEVELOPER MODE ⬆️ #############
     
     mp_drawing = mp.solutions.drawing_utils
     mp_pose = mp.solutions.pose
@@ -387,20 +386,20 @@ if authentication_status:
             st.markdown("<spam style='color:cyan; font-size:12px;'>🌏Speech commands requires Internet connection</span>", unsafe_allow_html=True)
         with exercise_number_set:
             placeholder_set = st.empty()
-            placeholder_set.metric(        "🟠SET",         "0 / " + str(st.session_state.n_sets),      "Not started")
+            placeholder_set.metric(        "🟠SET",         "0 / " + str(st.session_state.n_sets),      "Not started", delta_color="inverse")
         with exercise_number_rep:
             placeholder_rep = st.empty()
-            placeholder_rep.metric(        "🟠REPETITION",  "0 / " + str(st.session_state.n_reps),      "Not started")
+            placeholder_rep.metric(        "🟠REPETITION",  "0 / " + str(st.session_state.n_reps),      "Not started", delta_color="inverse")
         with exercise_number_pose:
             placeholder_pose = st.empty()
-            placeholder_pose.metric(       "🟠POSE",        "0 / " + str(st.session_state.n_poses),     "Not started")
+            placeholder_pose.metric(       "🟠POSE",        "0 / " + str(st.session_state.n_poses),     "Not started", delta_color="inverse")
         with exercise_number_pose_global:
             placeholder_pose_global = st.empty()
-            placeholder_pose_global.metric("🟠GLOBAL POSE", "0 / " + str(st.session_state.total_poses), "Not started")
+            placeholder_pose_global.metric("🟠GLOBAL POSE", "0 / " + str(st.session_state.total_poses), "Not started", delta_color="inverse")
         with exercise_status:
             placeholder_status = st.empty()
             st.markdown("<br>", unsafe_allow_html=True)
-            placeholder_status.markdown(util.font_size_px("✅ READY?", 26), unsafe_allow_html=True)        
+            placeholder_status.markdown(util.font_size_px("⏱️ SECONDS to start", 26), unsafe_allow_html=True)        
         st.markdown('---')
         
         trainer, user = st.columns(2)
@@ -744,7 +743,7 @@ if authentication_status:
                                         ############# DEVELOPER MODE ⬇️ #############
                                         if st.session_state.developer_mode == True:
                                             pose_trainer_cost_min = 0
-                                            pose_trainer_cost_max = 999
+                                            pose_trainer_cost_max = 99
                                         else:
                                             pose_trainer_cost_min = pose_trainer_cost_min
                                             pose_trainer_cost_max = pose_trainer_cost_max
@@ -2664,10 +2663,10 @@ if authentication_status:
                                                     cv2.FONT_HERSHEY_SIMPLEX, 0.4, (70,70,70), 1, cv2.LINE_AA)
 
                                         # Prob data
-                                        cv2.putText(image, 'PROB', (260,20), 
+                                        cv2.putText(image, 'PROB', (250,20), 
                                                     cv2.FONT_HERSHEY_SIMPLEX, 0.4, (70,70,70), 1, cv2.LINE_AA)
-                                        cv2.putText(image, ("{:.2f}".format(body_language_prob_p)),
-                                                    (260,48), 
+                                        cv2.putText(image, ("{:.2f}%".format(body_language_prob_p)),
+                                                    (250,48), 
                                                     cv2.FONT_HERSHEY_SIMPLEX, 0.4, color_validation_class, 1, cv2.LINE_AA)
                                     
                                         ############################################################
@@ -2863,7 +2862,6 @@ if authentication_status:
                                         ############################################################
 
                                 st.session_state.count_set += 1
-                                #placeholder_set.metric("SET", str(st.session_state.count_set) + " / "+ str(st.session_state.n_sets))
 
                                 if (st.session_state.count_set!=st.session_state.n_sets):
                                     try:
@@ -2884,7 +2882,7 @@ if authentication_status:
                         update_counter_panel('finished', st.session_state.count_pose_g, st.session_state.n_poses, st.session_state.count_rep, st.session_state.count_set)
 
                         cv2.rectangle(image, (50,180), (600,300), (0,255,0), -1)
-                        cv2.putText(image, 'FINISHED EXERCISE', (100,250), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255), 3, cv2.LINE_AA)
+                        cv2.putText(image, 'EXERCISE FINISHED!', (100,250), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255), 3, cv2.LINE_AA)
                         stframe.image(image,channels = 'BGR',use_column_width=True)
                         msucess = "Felicitaciones, bien hecho"
                         time.sleep(1)
@@ -3022,9 +3020,13 @@ if authentication_status:
 
                 for articulacion in articulaciones:
                     st.markdown("🧬 __" + (dashboard.get_articulacion_name(articulacion)[0]).upper() + "__")
-                    img_algles = dashboard.plot_articulacion_performance_by_exerc(articulacion, id_exercise, df_results, st.session_state.posfijo)
+                    img_algles, img_acorr, correlation_trainer_user = dashboard.plot_articulacion_performance_by_exerc(articulacion, id_exercise, df_results, st.session_state.posfijo)
+                    
                     st.plotly_chart(img_algles, use_container_width=True)
-                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.text("Correlación Trainer vs User : {:.4f}".format(correlation_trainer_user))
+                    st.pyplot(img_acorr)
+
+                    st.markdown("<br ><br >", unsafe_allow_html=True)
                 
                 st.markdown("🟡 __ANÁLISIS POR CADA POSE:__")
                 st.markdown("<br>", unsafe_allow_html=True)
