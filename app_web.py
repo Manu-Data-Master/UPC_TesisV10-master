@@ -299,9 +299,6 @@ name, authentication_status, username = authenticator.login("Login", "main")
 if authentication_status == False:
     st.error("Username/password is incorrect")
 
-#placeholder_app_mode = st.empty()
-#st.session_state.developer_mode = placeholder_app_mode.radio("Developer mode", (True, False), index = 1)
-
 ############# USER AUTHENTICATION ⬆️ #############
 
 if authentication_status:
@@ -436,7 +433,7 @@ if authentication_status:
                     
                     placeholder_trainer.image("./01. webapp_img/warm_up.gif")
                     stframe.image("./01. webapp_img/warm_up.gif")
-                    mstart = "Por favor asegurese que su dispositivo pueda ver su cuerpo completo en su pantalla"
+                    mstart = "Por favor asegúrate que tu cámara capte tu cuerpo completo"
                     speak_start_msg = threading.Thread(target=speak, args=(mstart,))
                     speak_start_msg.start()
                     time.sleep(2)
@@ -757,7 +754,7 @@ if authentication_status:
                                         ##        📐 SISTEMA ÁNGULOS - CÁLCULO (INICIO ⬇️)       ##
                                         ############################################################
                                         if (pose_user_cost < pose_trainer_cost_min) or (pose_user_cost > pose_trainer_cost_max):
-                                            cost_valid = "Asegúrate de imitar la pose del ejercicio"
+                                            cost_valid = "Asegúrate de imitar la pose del entrenador"
                                             try:
                                                 if not speak_stage1.is_alive():
                                                     speak_cost.start()
@@ -800,8 +797,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 2)
                                                     ############################################
                                                     
                                                     speak_stage1 = threading.Thread(target=speak, args=(stage,))
@@ -860,12 +857,11 @@ if authentication_status:
                                                     right_hip_angle in range(int(right_hip_angle_in - desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in),int(right_knee_angle_in + desv_right_knee_angle_in + 1)):
                                                     
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     ############################################                                                    
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 2
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 3)
                                                     ############################################
                                                      
                                                     speak_stage2 = threading.Thread(target=speak, args=(stage,))
@@ -926,8 +922,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 1)
                                                     ############################################
                                                     
                                                     speak_stage3 = threading.Thread(target=speak, args=(stage,))
@@ -1079,8 +1075,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 2)
                                                     ############################################
                                                     
                                                     speak_stage1 = threading.Thread(target=speak, args=(stage,))
@@ -1142,8 +1138,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 2
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 3)
                                                     ############################################
                                                     
                                                     speak_stage2 = threading.Thread(target=speak, args=(stage,))
@@ -1205,8 +1201,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 1)
                                                     ############################################
                                                     
                                                     speak_stage3 = threading.Thread(target=speak, args=(stage,))
@@ -1359,8 +1355,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 2)
                                                     ############################################
                                                     
                                                     speak_stage1 = threading.Thread(target=speak, args=(stage,))
@@ -1435,8 +1431,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 1)
                                                     ############################################
                                                     
                                                     speak_stage3 = threading.Thread(target=speak, args=(stage,))
@@ -1588,8 +1584,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 2)
                                                     ############################################
                                                     
                                                     speak_stage1 = threading.Thread(target=speak, args=(stage,))
@@ -1650,8 +1646,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 2
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 3)
                                                     ############################################
                                                     
                                                     speak_stage2 = threading.Thread(target=speak, args=(stage,))
@@ -1712,8 +1708,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 4)
                                                     ############################################
                                                     
                                                     speak_stage3 = threading.Thread(target=speak, args=(stage,))
@@ -1778,8 +1774,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 4
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 5)
                                                     ############################################
                                                     
                                                     speak_stage4 = threading.Thread(target=speak, args=(stage,))
@@ -1841,8 +1837,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 5
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 1)
                                                     ############################################
                                                     
                                                     speak_stage5 = threading.Thread(target=speak, args=(stage,))
@@ -2044,8 +2040,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 2)
                                                     ############################################
                                                     
                                                     speak_stage1 = threading.Thread(target=speak, args=(stage,))
@@ -2105,8 +2101,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 2
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 3)
                                                     ############################################
                                                     
                                                     speak_stage2 = threading.Thread(target=speak, args=(stage,))
@@ -2167,8 +2163,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 4)
                                                     ############################################
                                                     
                                                     speak_stage3 = threading.Thread(target=speak, args=(stage,))
@@ -2230,8 +2226,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 4
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 5)
                                                     ############################################
                                                     
                                                     speak_stage4 = threading.Thread(target=speak, args=(stage,))
@@ -2294,8 +2290,8 @@ if authentication_status:
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 5
-                                                    update_trainer_image(id_exercise, st.session_state.count_pose)
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    update_trainer_image(id_exercise, 1)
                                                     ############################################
                                                     
                                                     speak_stage5 = threading.Thread(target=speak, args=(stage,))
@@ -2759,8 +2755,8 @@ if authentication_status:
                                                 ############################################
                                                 st.session_state.count_pose_g += 1
                                                 st.session_state.count_pose = 2
-                                                update_trainer_image(id_exercise, st.session_state.count_pose)
                                                 update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                update_trainer_image(id_exercise, 3)
                                                 ############################################
                                                 
                                                 fin_rutina_timestamp = get_timestamp_log()
