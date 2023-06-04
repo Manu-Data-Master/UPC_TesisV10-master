@@ -2,7 +2,8 @@ import plotly.express as px
 import streamlit as st
 from sklearn import linear_model
 import pandas as pd
-from datetime import datetime
+from datetime import timedelta
+import numpy as np
 
 def summary_time_plot(df_whole_training, y_column, y_label, barmode, n_palette):
 
@@ -16,67 +17,123 @@ def summary_time_plot(df_whole_training, y_column, y_label, barmode, n_palette):
                  color='id_exercise', 
                  text_auto=True,
                  color_discrete_sequence = color_pallete_list[n_palette],
-                 labels={'id_exercise':'Workout routine', 'Date_Start': 'Date', y_column: y_label}, height=400)
+                 labels={'id_exercise':'Workout routine', 'Date_Start': 'Fecha', y_column: y_label},
+                 height=400)
     fig.update_layout(
-        title = 'WORKOUT TRAINING TIME by EXERCISE ROUTINE - {:.2f} {}'.format(total_workout_time, y_label),
-        xaxis_tickformat = '%d %B (%a)<br>%Y',
-        plot_bgcolor="#444",
+        title = 'Entrenamiento (Total: {:.2f} {}) por Fecha por Ejercicio - {}ed'.format(total_workout_time, y_label, barmode),
+        xaxis_tickformat = '%d %B (%a)<br>%Y',        
+        plot_bgcolor="#555",
         paper_bgcolor="#444",
         barmode = barmode,
-        font_size=16,
+        #font_size=16,
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=False),
+
+        
+        # https://plotly.com/python/reference/layout/xaxis/#layout-xaxis-tickformatstops-items-tickformatstop-dtickrange
+        #xaxis_tickformatstops = [
+        #    dict(dtickrange=[None, 1000], value="%H:%M:%S.%L ms"),     #Milisegundos
+        #    dict(dtickrange=[1000, 60000], value="%H:%M:%S s"),        #Segundos
+        #    dict(dtickrange=[60000, 3600000], value="%H:%M m"),        #Minutos
+        #    dict(dtickrange=[3600000, 86400000], value="%H:%M h"),     #Horas
+        #    dict(dtickrange=[86400000, 604800000], value="%e. %b d"),  #Días
+        #    dict(dtickrange=[604800000, "M1"], value="%e. %b w"),      #Semanas
+        #    dict(dtickrange=["M1", "M12"], value="%b '%y M"),          #Meses
+        #    dict(dtickrange=["M12", None], value="%Y Y")               #Años
+        #]
+        
     )
     return fig
 
 def scatter_plot(df_whole_training):
-    fig = px.scatter(df_whole_training, x="DateTime_Start", y="Prob", color="id_exercise", size='Kcal_factor'
-                     #size='petal_length', hover_data=['petal_width']
+    fig = px.scatter(df_whole_training, x="DateTime_Start", y="Prob", color="id_exercise", size='Kcal_factor',
+                     labels={'id_exercise':'Workout routine', 'Prob':'Prob(%) Trainer', 'DateTime_Start': 'Fecha Hora'},
                      )
-    
     fig.update_layout(
-        title = 'WORKOUT TRAINING TIME by EXERCISE ROUTINE - ',
+        title = 'Prob(%) similitud con Trainer por Fecha por Ejercicio',
         xaxis_tickformat = '%H~%M<br>%d %B (%a)<br>%Y',
-        plot_bgcolor="#444",
+        plot_bgcolor="#555",
         paper_bgcolor="#444",
-        font_size=16,
+        #font_size=16,
         xaxis=dict(showgrid=False),
-        #yaxis=dict(showgrid=False)
+        yaxis=dict(showgrid=False)
     )
 
     return fig
 
-def regression_plot(df_whole_training, y_column):
+def regression_plot(df_whole_training, y_column, y_label):
+    #st.code(y_column)
+    #st.code(y_label)
 
     df_whole_training = df_whole_training[['Date_Start', y_column]]
     df_whole_training = df_whole_training.groupby(['Date_Start'], as_index=False)[y_column].sum()
     df_whole_training = df_whole_training.round(2)
-    #st.dataframe(df_whole_training)
-    #fig = px.line(df_whole_training, x='Date_Start', y=y_column, text=y_column, markers=True, color_discrete_sequence =['cyan'])
-
-
     df_whole_training['index'] = df_whole_training.index
-    #datelist = pd.date_range(datetime.today(), periods=df_whole_training.shape[0]).tolist()
 
-    fig = px.scatter(df_whole_training,
-                    # x='Date_Start',
-                    x = 'index' ,
-                    y=y_column, 
-                    text=y_column,
-                    color=y_column,
-                    color_discrete_sequence = px.colors.sequential.Plotly3, 
-                    trendline="ols", 
-                    trendline_scope="overall",
-                    trendline_color_override="cyan",
-                    )
+    date_min = df_whole_training['Date_Start'].min()
+    date_max = df_whole_training['Date_Start'].max()
+    times = len(df_whole_training)
+    date_delta = (date_max-date_min).days
 
-    fig.update_traces(marker={'size': 50, })
-    fig.update_layout(
-        title = 'WORKOUT TRAINING TIME by EXERCISE ROUTINE - ',
-        #xaxis_tickformat = '%d %B (%a)<br>%Y',
-        plot_bgcolor="#333",
-        paper_bgcolor="#333",
-        font_size=16,
-        xaxis=dict(showgrid=False),
-        #yaxis=dict(showgrid=False)
+    x = df_whole_training['index'].values
+    y = df_whole_training[y_column].values
+    length = len(df_whole_training)
+    x = x.reshape(length, 1)
+    y = y.reshape(length, 1)
+    regr = linear_model.LinearRegression()
+    regr.fit(x, y)
+    y_pred_vals_1 = df_whole_training['index'].values.reshape(-1, 1)
+    df_whole_training['Y_tendencia'] = regr.predict(y_pred_vals_1)
+    df_whole_training['Y_prediccion'] = np.nan
+
+    #st.code(date_delta)
+    
+    if date_delta > 0:
+        y_pred_vals_2 = np.arange(df_whole_training['index'].max() + 1, df_whole_training['index'].max() + date_delta + 1).reshape(-1, 1)
+        pred = regr.predict(y_pred_vals_2)
+
+        for i in range(date_delta):
+            new_date = date_max + timedelta(days = i + 1)
+            row = pd.Series([new_date, np.nan, i+times, np.nan, float(pred[i])], index = df_whole_training.columns)
+            df_whole_training = df_whole_training.append(row, ignore_index=True)
+    
+    df_whole_training.rename(columns = {y_column: y_label}, inplace = True)
+    y_column = y_label
+    #st.dataframe(df_whole_training)    
+    
+    fig = px.scatter(
+        df_whole_training,
+        x = 'Date_Start',
+        y = [y_column, 'Y_tendencia', 'Y_prediccion'],
+        labels={'variable':'Leyenda', 'Date_Start': 'Fecha'},
+        )
+    fig.update_traces(
+        mode='markers+lines',
+        error_y=dict(color='white', width=20, thickness=5),
+        showlegend=True
     )
+    fig.update_layout(
+        xaxis_tickformat = '%d %B (%a)<br>%Y',
+        yaxis_title = y_label,
+        title='🔵Esfuerzo en {}, 🔴Tendencia & 🟢Predicción'.format(y_label),
+        hovermode="x",
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=False),
+    )
+    annotation = "Según tendencia, se estima consumir {:.2f} {} entre {} y {}".format(
+        df_whole_training['Y_prediccion'].sum(),
+        y_label,
+        date_max + timedelta(days = 1),
+        df_whole_training['Date_Start'].max()
+        )
+    fig.add_annotation(dict(font=dict(color='yellow',size=15),
+                            x=0,
+                            y=-0.23,
+                            showarrow=False,
+                            text=annotation,
+                            textangle=0,
+                            xanchor='left',
+                            xref="paper",
+                            yref="paper"))
 
     return fig

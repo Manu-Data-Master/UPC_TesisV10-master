@@ -48,7 +48,7 @@ def get_df_by_whole_training_data(datasets_list, d1, d2, peso_kg):
         df_whole_training = pd.concat([df_whole_training, df_new])
     
     df_whole_training.reset_index(drop=True, inplace=True)
-    df_whole_training = df_whole_training.sort_values(by=['DateTime_Start'], ascending=False)
+    df_whole_training = df_whole_training.sort_values(by=['DateTime_Start'], ascending=True)
 
     df_whole_training['Date_Start'] = pd.to_datetime(df_whole_training['DateTime_Start']).dt.date
     df_whole_training['Date_End'] = pd.to_datetime(df_whole_training['DateTime_End']).dt.date
@@ -129,7 +129,7 @@ def load_reportes(username):
                 st.dataframe(df_weight.style.set_properties(subset=[col_value], **{'background-color': 'blueviolet'}))
                 ############################################
                 st.markdown("---------", unsafe_allow_html=True)
-                st.markdown(util.font_size_px("📅 SUMMARY TIME PLOT by TIME", 18), unsafe_allow_html=True)
+                st.markdown(util.font_size_px("🕒 Tiempo de entrenamiento:", 26), unsafe_allow_html=True)
 
                 dict_col_time_unit = {'Seconds':'Time_Seconds_diff', 'Minutes':'Time_Minutes_diff', 'Hours':'Time_Hours_diff'}
                 dict_x_axis_time_label = {'Seconds':'seconds', 'Minutes':'minutes', 'Hours':'hours'}
@@ -143,7 +143,7 @@ def load_reportes(username):
 
                 ############################################
                 st.markdown("---------", unsafe_allow_html=True)
-                st.markdown(util.font_size_px("📅 SUMMARY TIME PLOT by CALORIES BURNED", 18), unsafe_allow_html=True)
+                st.markdown(util.font_size_px("🔥 Calorías quemadas:", 26), unsafe_allow_html=True)
                 img_main_3 = reportes_plots.summary_time_plot(
                     df_whole_training, 'Calories_burned_minutes', 'Kcal', 'stack', 1)
                 img_main_4 = reportes_plots.summary_time_plot(
@@ -153,21 +153,25 @@ def load_reportes(username):
 
                 ############################################
                 st.markdown("---------", unsafe_allow_html=True)
-                st.markdown(util.font_size_px("📅 SUMMARY SCATTER", 18), unsafe_allow_html=True)
+                st.markdown(util.font_size_px("🏆 Similitud con Trainer por ejercicio:", 26), unsafe_allow_html=True)
                 img_main_5 = reportes_plots.scatter_plot(df_whole_training)
                 st.plotly_chart(img_main_5, use_container_width = True)
 
                 ############################################
                 st.markdown("---------", unsafe_allow_html=True)
-                st.markdown(util.font_size_px("📅 REGRESSION MODEL", 18), unsafe_allow_html=True)
-                img_main_6 = reportes_plots.regression_plot(df_whole_training, 'Calories_burned_minutes')
+                st.markdown(util.font_size_px("🧮 Predicción por regresión:", 26), unsafe_allow_html=True)
+                img_main_6 = reportes_plots.regression_plot(df_whole_training, 'Calories_burned_minutes', 'Kcal')
                 st.plotly_chart(img_main_6, use_container_width = True)
-                img_main_7 = reportes_plots.regression_plot(df_whole_training, 'Time_Minutes_diff')
+
+
+                img_main_7 = reportes_plots.regression_plot(df_whole_training, dict_col_time_unit[rd_time_unit],
+                                                             dict_x_axis_time_label[rd_time_unit])
                 st.plotly_chart(img_main_7, use_container_width = True)
 
                 ############################################
                 st.markdown("---------", unsafe_allow_html=True)
-                st.markdown(util.font_size_px("📅 RAW DATA", 18), unsafe_allow_html=True)
+                st.markdown(util.font_size_px("💾 Raw Data:", 26), unsafe_allow_html=True)
+                df_whole_training = df_whole_training.reset_index(drop=True)
                 st.dataframe(df_whole_training)
                 
                 ############################################
