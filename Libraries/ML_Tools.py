@@ -7,18 +7,19 @@ import Libraries.ML_Functions.ml_model_train as ml_model_train
 import Libraries.ML_Functions.ml_model_test as ml_model_test
 
 def load_ml_tools():
-    tab_create_pose_dataset, tab_ml_model_train, tab_ml_model_test = st.tabs(["💾CREATE POSE DATASET", "🤖 ML MODEL TRAINING", "🦾 ML MODEL TEST"])
-    with tab_create_pose_dataset:
-        st.markdown("**💾 CREATE POSE DATASET**", unsafe_allow_html=True)        
-        st.markdown("<br>", unsafe_allow_html=True)
+    #tab_create_pose_dataset, tab_ml_model_train, tab_ml_model_test = st.tabs(["💾CREATE POSE DATASET", "🤖 ML MODEL TRAINING", "🦾 ML MODEL TEST"])
+    tab_ml_model_train, tab_ml_model_test = st.tabs(["🤖 ML MODEL TRAINING", "🦾 ML MODEL TEST"])
+    #with tab_create_pose_dataset:
+    #    st.markdown("**💾 CREATE POSE DATASET**", unsafe_allow_html=True)        
+    #    st.markdown("<br>", unsafe_allow_html=True)
 
-        st.markdown("1️⃣ UPLOAD 3 TRAINERS PNG FILES:", unsafe_allow_html=True)
-        id_exercise = st.selectbox("Choose exercise", ml_crea_pos_dt.list_exercise())
-        uploaded_png_files = st.file_uploader("Choose a PNG file for Trainer 1", type= ['png'], accept_multiple_files=True )
-        st.markdown("------", unsafe_allow_html=True)
-        st.markdown("2️⃣ PROCESSING IMAGES  🔸  3️⃣ GENERATE TRAINERS CSV FILES:", unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        ml_crea_pos_dt.main_function(uploaded_png_files, id_exercise)
+    #    st.markdown("1️⃣ UPLOAD 3 TRAINERS PNG FILES:", unsafe_allow_html=True)
+    #    id_exercise = st.selectbox("Choose exercise", ml_crea_pos_dt.list_exercise())
+    #    uploaded_png_files = st.file_uploader("Choose a PNG file for Trainer 1", type= ['png'], accept_multiple_files=True )
+    #    st.markdown("------", unsafe_allow_html=True)
+    #    st.markdown("2️⃣ PROCESSING IMAGES  🔸  3️⃣ GENERATE TRAINERS CSV FILES:", unsafe_allow_html=True)
+    #    st.markdown("<br>", unsafe_allow_html=True)
+    #    ml_crea_pos_dt.main_function(uploaded_png_files, id_exercise)
     
     with tab_ml_model_train:
         st.markdown("**🤖 ML MODEL TRAINING**", unsafe_allow_html=True)

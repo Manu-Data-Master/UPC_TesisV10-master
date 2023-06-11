@@ -29,12 +29,17 @@ def load_home(edad, peso, talla, imc, perabdominal):
         st.markdown(util.font_size_px("🏃‍♀️ Sistema Predicción Ejercicio:", 20), unsafe_allow_html=True)
         st.markdown("* [Sistema detección de poses 1](%s)" % 'https://aryanvij02.medium.com/push-ups-with-python-mediapipe-open-a544bd9b4351')
         st.markdown("* [Sistema detección de poses 2](%s)" % 'https://learnopencv.com/building-a-body-posture-analysis-system-using-mediapipe/')
+        st.image("https://editor.analyticsvidhya.com/uploads/53099pose.png")
     with col_system_angles:
         st.markdown(util.font_size_px("📐 Sistema Detección Ángulos:", 20), unsafe_allow_html=True)
-        st.markdown("Text", unsafe_allow_html=True)
+        st.markdown("* [Estimating joint angles from 3D body poses](%s)" % 'https://temugeb.github.io/python/motion_capture/2021/09/16/joint_rotations.html')
+        st.markdown("* [AI Pose Estimation with Python and MediaPipe](%s)" % 'https://www.youtube.com/watch?v=06TE_U21FK4')
+        st.markdown("* [Human activity recognition with analysis of angles...](%s)" % 'https://onlinelibrary.wiley.com/doi/full/10.4218/etrij.2018-0577')
+        st.image("https://www.researchgate.net/publication/323152192/figure/fig5/AS:960283547807759@1605960847499/Right-upper-arm-angle-calculation-by-Kinect.gif")
     with col_system_cost:
         st.markdown(util.font_size_px("💰 Sistema Comparación Costos Imágenes:", 20), unsafe_allow_html=True)
-        st.markdown("Text", unsafe_allow_html=True)
+        st.markdown("* [Dynamic time warping](%s)" % 'https://en.wikipedia.org/wiki/Dynamic_time_warping')
+        st.image("https://upload.wikimedia.org/wikipedia/commons/9/97/Two_repetitions_of_a_walking_sequence_of_an_individual_recorded_using_a_motion-capture_system.gif")
     
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown(util.font_size_px("🏋🏼‍♂️ Workout routines", 26), unsafe_allow_html=True)

@@ -252,6 +252,9 @@ st.markdown(
     .css-12oz5g7 {{
         padding-top: 3rem;
     }}
+    .css-1fv8s86 a{{
+        color:white;
+    }}
     .stButton{{
         text-align: center !important;
     }}
