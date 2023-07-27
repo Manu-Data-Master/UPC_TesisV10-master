@@ -40,7 +40,7 @@ st.session_state.count_set      = 0
 st.session_state.starting_secs = 5
 st.session_state.landmark_visible = 0.2
 st.session_state.prob_change_color = 33
-st.session_state.prob_avance_pose = 20
+st.session_state.prob_avance_pose = 40
 st.session_state.prob_avance_pose = False
 
 # 2. FUNCTIONS
@@ -66,7 +66,7 @@ def load_exercise_metadata(id_exercise):
 
 #functions to use text to speech
 def speak(text):
-    substrs_to_compare = ['Felicitaciones', "Mantenga la posicion"]
+    substrs_to_compare = ['Felicitaciones']
     with io.BytesIO() as file:
         tts = gTTS(text=text, lang='es')
         tts.write_to_fp(file)
@@ -77,6 +77,8 @@ def speak(text):
             continue
     if not any(text.startswith(substring) for substring in substrs_to_compare):
         time.sleep(3)
+    elif text.startswith("Mantenga"):
+        time.sleep(5)
 
 def get_exercise_gif(id_exercise):
     gif_file = "02. trainers/" + id_exercise + "/images/" + id_exercise + ".gif"
@@ -171,7 +173,6 @@ def update_counter_panel(season, count_pose_g, count_pose, count_rep, count_set)
         placeholder_rep.metric(        "🟢REPETITION DONE",  str(count_rep)    + " / " + str(st.session_state.n_reps), "COMPLETED")
         placeholder_pose.metric(       "🟢POSE DONE",        str(count_pose)   + " / " + str(st.session_state.n_poses),"COMPLETED")
         placeholder_pose_global.metric("🟢GLOBAL POSE DONE", str(count_pose_g) + " / " + str(st.session_state.total_poses), "COMPLETED")
-        placeholder_trainer.image("./02. trainers/{}/images/{}1.png".format(id_exercise, id_exercise))
     else:
         placeholder_status.markdown(util.font_size_px("⚠️", 26), unsafe_allow_html=True)
 
@@ -251,9 +252,6 @@ st.markdown(
     }}
     .css-12oz5g7 {{
         padding-top: 3rem;
-    }}
-    .css-1fv8s86 a{{
-        color:white;
     }}
     .stButton{{
         text-align: center !important;
@@ -410,7 +408,6 @@ if authentication_status:
         with user:
             st.markdown("**USER**", unsafe_allow_html=True)
             stframe = st.empty()
-            #stframe.image("./01. webapp_img/user.png")
             df_trainer_coords = get_trainer_coords(id_exercise, id_trainer)
             df_trainers_angles = get_trainers_angles(id_exercise)        
         st.markdown('---')
@@ -436,7 +433,7 @@ if authentication_status:
                     
                     placeholder_trainer.image("./01. webapp_img/warm_up.gif")
                     stframe.image("./01. webapp_img/warm_up.gif")
-                    mstart = "Por favor asegúrate que tu cámara capte tu cuerpo completo"
+                    mstart = "Asegúrate que los puntos del ejercicio sean visibles por tu cámara"
                     speak_start_msg = threading.Thread(target=speak, args=(mstart,))
                     speak_start_msg.start()
                     time.sleep(2)
@@ -492,7 +489,6 @@ if authentication_status:
                                     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                                     
                                     # Extract landmarks
-                                    # try:
                                     if results.pose_landmarks is None:
                                         cv2.putText(image, 
                                         "No se han detectado ninguno de los 33 puntos corporales",
@@ -516,7 +512,8 @@ if authentication_status:
 
                                         # Make Detections
                                         X = pd.DataFrame([row])
-
+                                        # Load Model Clasification
+                                        body_language_class = LoadModel().predict(X)[0]
                                         # Load Model Clasification                                        
                                         body_language_prob = max(LoadModel().predict_proba(X)[0])
                                         body_language_prob_p = round(body_language_prob*100,2)
@@ -526,7 +523,7 @@ if authentication_status:
                                         ############################################################
                                         if (landmarks[11].visibility >= st.session_state.landmark_visible and \
                                             landmarks[13].visibility >= st.session_state.landmark_visible and \
-                                                landmarks[15].visibility >= st.session_state.landmark_visible):
+                                            landmarks[15].visibility >= st.session_state.landmark_visible):
                                             right_arm_x1 = int(landmarks[11].x * width) #right_elbow_angle
                                             right_arm_x2 = int(landmarks[13].x * width)
                                             right_arm_x3 = int(landmarks[15].x * width)
@@ -556,7 +553,7 @@ if authentication_status:
 
                                         if (landmarks[12].visibility >= st.session_state.landmark_visible and \
                                             landmarks[14].visibility >= st.session_state.landmark_visible and \
-                                                landmarks[16].visibility >= st.session_state.landmark_visible):
+                                            landmarks[16].visibility >= st.session_state.landmark_visible):
                                             left_arm_x1 = int(landmarks[12].x * width) #left_elbow_angle
                                             left_arm_x2 = int(landmarks[14].x * width)
                                             left_arm_x3 = int(landmarks[16].x * width)
@@ -676,7 +673,7 @@ if authentication_status:
 
                                         if (landmarks[23].visibility >= st.session_state.landmark_visible and \
                                             landmarks[25].visibility >= st.session_state.landmark_visible and \
-                                                landmarks[27].visibility >= st.session_state.landmark_visible):
+                                            landmarks[27].visibility >= st.session_state.landmark_visible):
                                             right_leg_x1 = int(landmarks[23].x * width) #right_knee_angle
                                             right_leg_x2 = int(landmarks[25].x * width)
                                             right_leg_x3 = int(landmarks[27].x * width) 
@@ -782,7 +779,7 @@ if authentication_status:
                                                                 speak_cost.start() 
                                         else:
                                             #🟢 PUSH UP - 3 POSES (ejercicio 1 de 5)
-                                            if selected_exercise == "push_up" and body_language_prob_p > st.session_state.prob_avance_pose:
+                                            if id_exercise == "push_up" and body_language_prob_p > st.session_state.prob_avance_pose:
 
                                                 right_elbow_angle_in        = UpcSystemAngles.get_valu_angle(df_trainers_angles, start, 'right_elbow_angles')
                                                 right_hip_angle_in          = UpcSystemAngles.get_valu_angle(df_trainers_angles, start, 'right_hip_angles')
@@ -797,15 +794,17 @@ if authentication_status:
                                                     right_elbow_angle in range(int(right_elbow_angle_in-desv_right_elbow_angle_in), int(right_elbow_angle_in + desv_right_elbow_angle_in + 1)) and\
                                                     right_hip_angle in range(int(right_hip_angle_in - desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in),int(right_knee_angle_in + desv_right_knee_angle_in + 1)):                                                    
+
+                                                    up = True
+                                                    stage = "Arriba"
+                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage1.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 2)
                                                     ############################################
-                                                    
-                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage1.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -846,10 +845,7 @@ if authentication_status:
                                                     )
                                                     ############################################
                                                     last_set = st.session_state.count_set + 1
-                                                    last_rep = st.session_state.count_rep + 1
-
-                                                    up = True
-                                                    stage = "Arriba"
+                                                    last_rep = st.session_state.count_rep + 1     
                                                     start +=1
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
 
@@ -860,15 +856,16 @@ if authentication_status:
                                                     right_hip_angle in range(int(right_hip_angle_in - desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in),int(right_knee_angle_in + desv_right_knee_angle_in + 1)):
                                                     
+                                                    down = True
+                                                    stage = "Abajo"
+                                                    speak_stage2 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage2.start()
                                                     ############################################                                                    
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 2
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 3)
                                                     ############################################
-                                                     
-                                                    speak_stage2 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage2.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise                                                                                    
@@ -910,8 +907,6 @@ if authentication_status:
                                                     ############################################
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    down = True
-                                                    stage = "Abajo"
                                                     start +=1
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
                                                 
@@ -921,14 +916,16 @@ if authentication_status:
                                                     right_elbow_angle in range(int(right_elbow_angle_in - desv_right_elbow_angle_in) , int(right_elbow_angle_in + desv_right_elbow_angle_in + 1)) and\
                                                     right_hip_angle in range(int(right_hip_angle_in - desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in),int(right_knee_angle_in + desv_right_knee_angle_in + 1)):   
-                                                    
-                                                    ############################################
+                                                    up = False
+                                                    down = False
+                                                    stage = "Arriba"
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
-                                                    update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
-                                                    update_trainer_image(id_exercise, 1)
                                                     ############################################
-                                                    
+                                                    update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
+                                                    # Cambio Renzo
+                                                    # update_trainer_image(id_exercise, 1)
+                                                    ############################################
                                                     speak_stage3 = threading.Thread(target=speak, args=(stage,))
                                                     speak_stage3.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
@@ -972,18 +969,13 @@ if authentication_status:
                                                     ######################################s######
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    up = False
-                                                    down = False
-                                                    stage = "Arriba"
                                                     start = 0 
-
                                                     st.session_state.count_rep += 1
                                                     st.session_state.count_pose = 0
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp    
 
                                                 #🟢 PUSH UP - ninguna pose
                                                 else:
-
                                                     # ************************ INICIO SISTEMA DE RECOMENDACIONES - PUSH UP ************************ #                                                    
                                                     if st.session_state.count_pose+1 == 1 or st.session_state.count_pose+1 == 3:                                                    
                                                         if right_elbow_angle > right_elbow_angle_in+desv_right_elbow_angle_in:
@@ -1074,16 +1066,16 @@ if authentication_status:
                                                     right_shoulder_angle in range(int(right_shoulder_angle_in-desv_right_shoulder_angle_in), int(right_shoulder_angle_in + desv_right_shoulder_angle_in + 1)) and\
                                                     right_hip_angle in range(int(right_hip_angle_in - desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in),int(right_knee_angle_in + desv_right_knee_angle_in + 1)):                                                    
-                                                    
+                                                    up = True
+                                                    stage = "Abajo"
+                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage1.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 2)
                                                     ############################################
-                                                    
-                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage1.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1125,10 +1117,7 @@ if authentication_status:
                                                     ############################################ 
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    up = True
-                                                    stage = "Abajo"
                                                     start +=1
-
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
                                                 
                                                 #🟢 CURL UP - pose 2 de 3
@@ -1137,16 +1126,16 @@ if authentication_status:
                                                     right_shoulder_angle in range(int(right_shoulder_angle_in - desv_right_shoulder_angle_in) , int(right_shoulder_angle_in + desv_right_shoulder_angle_in + 1)) and\
                                                     right_hip_angle in range(int(right_hip_angle_in - desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in),int(right_knee_angle_in + desv_right_knee_angle_in + 1)):                                                    
-                                                    
+                                                    down = True
+                                                    stage = "Arriba"                                                    
+                                                    speak_stage2 = threading.Thread(target=speak, args=(stage,))  
+                                                    speak_stage2.start()                                                                                                      
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 2
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 3)
                                                     ############################################
-                                                    
-                                                    speak_stage2 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage2.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1188,10 +1177,7 @@ if authentication_status:
                                                     ############################################
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    down = True
-                                                    stage = "Arriba"
                                                     start +=1
-
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
                                                 
                                                 #🟢 CURL UP - pose 3 de 3
@@ -1200,16 +1186,16 @@ if authentication_status:
                                                     right_shoulder_angle in range(int(right_shoulder_angle_in - desv_right_shoulder_angle_in) , int(right_shoulder_angle_in + desv_right_shoulder_angle_in + 1)) and\
                                                     right_hip_angle in range(int(right_hip_angle_in - desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in),int(right_knee_angle_in + desv_right_knee_angle_in + 1)):
-                                                    
+                                                    up = False
+                                                    down = False
+                                                    stage = "Abajo"                                                    
+                                                    speak_stage3 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage3.start()                                                    
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
-                                                    update_trainer_image(id_exercise, 1)
                                                     ############################################
-                                                    
-                                                    speak_stage3 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage3.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1251,9 +1237,6 @@ if authentication_status:
                                                     #####################################s######
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    up = False
-                                                    down = False
-                                                    stage = "Abajo"
                                                     start = 0
 
                                                     st.session_state.count_rep += 1
@@ -1354,16 +1337,17 @@ if authentication_status:
                                                     right_shoulder_angle in range(int(right_shoulder_angle_in-desv_right_shoulder_angle_in), int(right_shoulder_angle_in + desv_right_shoulder_angle_in + 1)) and\
                                                     right_hip_angle in range(int(right_hip_angle_in - desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_ankle_angle in range(int(right_ankle_angle_in - desv_right_ankle_angle_in),int(right_ankle_angle_in + desv_right_ankle_angle_in + 1)):
-                                                    
+                                                    up = True
+                                                    stage = "Abajo"                                                    
+                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage1.start()                                                    
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 2)
                                                     ############################################
-                                                    
-                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage1.start()
+
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1405,8 +1389,6 @@ if authentication_status:
                                                     ############################################
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    up = True
-                                                    stage = "Abajo"
                                                     start +=1
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
                                                 
@@ -1419,10 +1401,10 @@ if authentication_status:
                                                     
                                                     down = True
                                                     stage = "Arriba"
+                                                    speak_stage2 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage2.start()  
                                                     start +=1
                                                     flagTime = True
-                                                    #st.session_state.count_pose_g += 1 # Se actualiza más abajo
-                                                    #st.session_state.count_pose = 2    # Se actualiza más abajo
                                                     
                                                 #🟢 FRONT PLANK - pose 3 de 3
                                                 elif up == True and\
@@ -1430,16 +1412,17 @@ if authentication_status:
                                                     right_shoulder_angle in range(int(right_shoulder_angle_in - desv_right_shoulder_angle_in) , int(right_shoulder_angle_in + desv_right_shoulder_angle_in + 1)) and\
                                                     right_hip_angle in range(int(right_hip_angle_in - desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_ankle_angle in range(int(right_ankle_angle_in - desv_right_ankle_angle_in),int(right_ankle_angle_in + desv_right_ankle_angle_in + 1)):
-                                                    
+                                                    up = False
+                                                    down = False
+                                                    stage = "Abajo"
+                                                    speak_stage3 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage3.start()                                                    
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
-                                                    update_trainer_image(id_exercise, 1)
                                                     ############################################
-                                                    
-                                                    speak_stage3 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage3.start()
+
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1481,11 +1464,7 @@ if authentication_status:
                                                     ######################################s######
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    up = False
-                                                    down = False
-                                                    stage = "Abajo"
                                                     start = 0
-
                                                     st.session_state.count_rep += 1                                                
                                                     st.session_state.count_pose = 0
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
@@ -1583,16 +1562,15 @@ if authentication_status:
                                                     down == False and\
                                                     right_hip_angle in range(int(right_hip_angle_in-desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in), int(right_knee_angle_in + desv_right_knee_angle_in + 1)):
-                                                    
+                                                    stage = "Arriba"                                                    
+                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage1.start()                                                    
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 2)
                                                     ############################################
-                                                    
-                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage1.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1635,7 +1613,6 @@ if authentication_status:
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
                                                     up = True
-                                                    stage = "Arriba"
                                                     start +=1
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
                                                 
@@ -1645,16 +1622,15 @@ if authentication_status:
                                                     right_hip_angle in range(int(right_hip_angle_in-desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in), int(right_knee_angle_in + desv_right_knee_angle_in + 1)) and\
                                                     left_knee_angle in range(int(left_knee_angle_in - desv_left_knee_angle_in), int(left_knee_angle_in + desv_left_knee_angle_in + 1)):
-                                                    
+                                                    stage = "Abajo"                                                   
+                                                    speak_stage2 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage2.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 2
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 3)
                                                     ############################################
-                                                    
-                                                    speak_stage2 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage2.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1697,9 +1673,7 @@ if authentication_status:
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
                                                     down = True
-                                                    stage = "Abajo"
                                                     start +=1
-
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
                                                 
                                                 #🟢 FORWARD LUNGE  - pose 3 de 5 
@@ -1707,16 +1681,16 @@ if authentication_status:
                                                     down == True and\
                                                     right_hip_angle in range(int(right_hip_angle_in-desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in), int(right_knee_angle_in + desv_right_knee_angle_in + 1)):
-                                                    
+                                                    stage = "Arriba"
+                                                    speak_stage3 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage3.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 4)
                                                     ############################################
-                                                    
-                                                    speak_stage3 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage3.start()
+
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1760,9 +1734,7 @@ if authentication_status:
                                                     last_rep = st.session_state.count_rep + 1
                                                     up = False
                                                     down = True
-                                                    stage = "Arriba"
                                                     start +=1
-
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
                                                     #####################################s######
                                                 
@@ -1773,16 +1745,15 @@ if authentication_status:
                                                     right_hip_angle in range(int(right_hip_angle_in-desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in), int(right_knee_angle_in + desv_right_knee_angle_in + 1)) and\
                                                     left_knee_angle in range(int(left_knee_angle_in - desv_left_knee_angle_in), int(left_knee_angle_in + desv_left_knee_angle_in + 1)):
-                                                    
+                                                    stage = "Abajo"
+                                                    speak_stage4 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage4.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 4
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 5)
                                                     ############################################
-                                                    
-                                                    speak_stage4 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage4.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1825,27 +1796,22 @@ if authentication_status:
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
                                                     mid = True
-                                                    stage = "Abajo"
                                                     start +=1
-
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
-                                                
                                                 #🟢 FORWARD LUNGE  - pose 5 de 5 
                                                 elif up == False and\
                                                     down == True and\
                                                     mid == True and\
                                                     right_hip_angle in range(int(right_hip_angle_in-desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in), int(right_knee_angle_in + desv_right_knee_angle_in + 1)):
-                                                    
+                                                    stage = "Arriba"
+                                                    speak_stage5 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage5.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 5
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
-                                                    update_trainer_image(id_exercise, 1)
                                                     ############################################
-                                                    
-                                                    speak_stage5 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage5.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -1890,16 +1856,13 @@ if authentication_status:
                                                     up = False
                                                     down = False
                                                     mid = False
-                                                    stage = "Arriba"
                                                     start = 0
-
                                                     st.session_state.count_rep += 1
                                                     st.session_state.count_pose = 0
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp                                                
 
                                                 #🟢 FORWARD LUNGE - ninguna pose
                                                 else:
-
                                                     # ************************ INICIO SISTEMA DE RECOMENDACIONES - FORWARD LUNGE ************************ #
                                                     if st.session_state.count_pose+1 == 1 or st.session_state.count_pose+1 == 3 or st.session_state.count_pose+1 == 5:
                                                         if (right_hip_angle > right_hip_angle_in+desv_right_hip_angle_in) or\
@@ -2040,15 +2003,16 @@ if authentication_status:
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in), int(right_knee_angle_in + desv_right_knee_angle_in + 1)) and\
                                                     right_shoulder_angle in range(int(right_shoulder_angle_in - desv_right_shoulder_angle_in), int(right_shoulder_angle_in + desv_right_shoulder_angle_in + 1)):
                                                     
+                                                    up = True
+                                                    stage = "Abajo"
+                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage1.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 1
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 2)
                                                     ############################################
-                                                    
-                                                    speak_stage1 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage1.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -2090,8 +2054,6 @@ if authentication_status:
                                                     ############################################ 
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    up = True
-                                                    stage = "Abajo"
                                                     start +=1                                                    
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
 
@@ -2100,16 +2062,16 @@ if authentication_status:
                                                     down == False and\
                                                     left_knee_angle in range(int(left_knee_angle_in-desv_left_knee_angle_in), int(left_knee_angle_in + desv_left_knee_angle_in + 1)) and\
                                                     right_elbow_angle in range(int(right_elbow_angle_in - desv_right_elbow_angle_in), int(right_elbow_angle_in + desv_right_knee_angle_in + 1)):
-                                                    
+                                                    down = True
+                                                    stage = "Arriba"
+                                                    speak_stage2 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage2.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 2
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 3)
                                                     ############################################
-                                                    
-                                                    speak_stage2 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage2.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -2151,8 +2113,6 @@ if authentication_status:
                                                     ############################################ 
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    down = True
-                                                    stage = "Arriba"
                                                     start +=1
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp                                            
                                                 
@@ -2162,16 +2122,17 @@ if authentication_status:
                                                     right_hip_angle in range(int(right_hip_angle_in-desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in), int(right_knee_angle_in + desv_right_knee_angle_in + 1)) and\
                                                     right_shoulder_angle in range(int(right_shoulder_angle_in - desv_right_shoulder_angle_in), int(right_shoulder_angle_in + desv_right_shoulder_angle_in + 1)):
-                                                    
+                                                    up = False
+                                                    down = True
+                                                    stage = "Abajo"
+                                                    speak_stage3 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage3.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 3
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 4)
                                                     ############################################
-                                                    
-                                                    speak_stage3 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage3.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -2213,12 +2174,8 @@ if authentication_status:
                                                     ######################################s######
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    up = False
-                                                    down = True
-                                                    stage = "Abajo"
                                                     start +=1
-                                                    st.session_state.inicio_rutina = fin_rutina_timestamp
-                                                
+                                                    st.session_state.inicio_rutina = fin_rutina_timestamp 
                                                 #🟢  BIRD DOG - pose 4 de 5
                                                 elif up == False and\
                                                     down == True and\
@@ -2226,15 +2183,16 @@ if authentication_status:
                                                     right_knee_angle in range(int(right_knee_angle_in-desv_right_knee_angle_in), int(right_knee_angle_in + desv_right_knee_angle_in + 1)) and\
                                                     left_elbow_angle in range(int(left_elbow_angle_in - desv_left_elbow_angle_in), int(left_elbow_angle_in + desv_left_elbow_angle_in + 1)):
                                                     
+                                                    mid = True
+                                                    stage = "Arriba"
+                                                    speak_stage4 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage4.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 4
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
                                                     update_trainer_image(id_exercise, 5)
-                                                    ############################################
-                                                    
-                                                    speak_stage4 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage4.start()
+                                                    ############################################ 
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -2276,10 +2234,7 @@ if authentication_status:
                                                     ############################################ 
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    mid = True
-                                                    stage = "Arriba"
                                                     start +=1
-
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
                                                 
                                                 #🟢  BIRD DOG - pose 5 de 5
@@ -2289,16 +2244,19 @@ if authentication_status:
                                                     right_hip_angle in range(int(right_hip_angle_in-desv_right_hip_angle_in), int(right_hip_angle_in + desv_right_hip_angle_in + 1)) and\
                                                     right_knee_angle in range(int(right_knee_angle_in - desv_right_knee_angle_in), int(right_knee_angle_in + desv_right_knee_angle_in + 1)) and\
                                                     right_shoulder_angle in range(int(right_shoulder_angle_in - desv_right_shoulder_angle_in), int(right_shoulder_angle_in + desv_right_shoulder_angle_in + 1)):
-                                                    
+                                                    up = False
+                                                    down = False
+                                                    mid = False
+                                                    stage = "Abajo"
+                                                    speak_stage5 = threading.Thread(target=speak, args=(stage,))
+                                                    speak_stage5.start()
                                                     ############################################
                                                     st.session_state.count_pose_g += 1
                                                     st.session_state.count_pose = 5
                                                     update_counter_panel('training', st.session_state.count_pose_g, st.session_state.count_pose, st.session_state.count_rep + 1, st.session_state.count_set + 1)
-                                                    update_trainer_image(id_exercise, 1)
+                                                    # Cambio Renzo
+                                                    # update_trainer_image(id_exercise, 1)
                                                     ############################################
-                                                    
-                                                    speak_stage5 = threading.Thread(target=speak, args=(stage,))
-                                                    speak_stage5.start()
                                                     fin_rutina_timestamp = get_timestamp_log()
                                                     df_results = util.add_row_df_results(df_results,
                                                                                     id_exercise,                        #1 - str - id_exercise
@@ -2340,12 +2298,7 @@ if authentication_status:
                                                     ######################################s######
                                                     last_set = st.session_state.count_set + 1
                                                     last_rep = st.session_state.count_rep + 1
-                                                    up = False
-                                                    down = False
-                                                    mid = False
-                                                    stage = "Abajo"
                                                     start = 0
-
                                                     st.session_state.count_rep += 1
                                                     st.session_state.count_pose = 0
                                                     st.session_state.inicio_rutina = fin_rutina_timestamp
@@ -2464,15 +2417,7 @@ if authentication_status:
                                             
                                             #🟢 0. NINGÚN EJERCICIO
                                             else:
-                                                stage = ""
-                                                start = 0
-                                                up = False
-                                                down = False
-                                                mid = False
-                                                st.session_state.count_pose_g = 0 
-                                                st.session_state.count_pose = 0 
                                                 print(f'NINGÚN EJERCICIO')
-                                        #else:
                                         ############################################################
                                         ##        📐 SISTEMA ÁNGULOS - CÁLCULO (FIN ⬆️)          ##
                                         ############################################################
@@ -2594,7 +2539,6 @@ if authentication_status:
                                         r1B_y = 30              # y inicial
                                         r1B_w = 140             # width
                                         r1B_h = 24              # height
-                                        #r1B_rgb = (55,117,0)    # color BGR
                                         r1B_rgb = (255,255,255) # color BGR
                                         r1B_thickness = -1      # Sin ancho de borde
                                         cv2.rectangle(image, (r1B_x, r1B_y), (r1B_x + r1B_w, r1B_y + r1B_h), r1B_rgb, r1B_thickness)
@@ -2649,7 +2593,6 @@ if authentication_status:
                                         r3B_y = 30             # y inicial
                                         r3B_w = 156             # width
                                         r3B_h = 24              # height
-                                        #r3B_rgb = (0,100,100)   # color BGR
                                         r3B_rgb = (255,255,255) # color BGR
                                         r3B_thickness = -1      #Sin ancho de borde
                                         cv2.rectangle(image, (r3B_x, r3B_y), (r3B_x + r3B_w, r3B_y + r3B_h), r3B_rgb, r3B_thickness)
@@ -2748,9 +2691,10 @@ if authentication_status:
                                             if start == 2 and flagTime == True:
                                                 keep_pose_sec = 5 
                                                 cv2.putText(image, 'WAIT FOR ' + str(keep_pose_sec) + ' s' , (155,350), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,0,0), 3, cv2.LINE_AA)
+                                                stframe.image(image,channels = 'BGR',use_column_width=True)
+                                                time.sleep(1)
                                                 mifrontplank = "Mantenga la posicion " + str(keep_pose_sec) + " segundos"
                                                 speak(mifrontplank)
-                                                stframe.image(image,channels = 'BGR',use_column_width=True)
                                                 time.sleep(keep_pose_sec)
                                                 mffrontplank = "Baje!"
                                                 speak_stage2 = threading.Thread(target=speak, args=(mffrontplank,))
@@ -2868,18 +2812,18 @@ if authentication_status:
                                         cv2.putText(image, 'FINISHED SET', (100,250), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,0,0), 3, cv2.LINE_AA)
                                         cv2.putText(image, 'REST FOR ' + str(st.session_state.seconds_rest_time) + ' s' , (155,350), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,0,0), 3, cv2.LINE_AA)
                                         stframe.image(image,channels = 'BGR',use_column_width=True)
-                                        # cv2.waitKey(1)
                                         msucessset = "Felicitaciones, vas por buen camino"
                                         time.sleep(1)
                                         speak(msucessset)
                                         time.sleep(int(st.session_state.seconds_rest_time))
                                         placeholder_status.markdown(util.font_size_px("🏎️ TRAINING...", 26), unsafe_allow_html=True)
-
+                                        update_trainer_image(id_exercise,1)
                                     except:
                                         stframe.image(image,channels = 'BGR',use_column_width=True)
                                         pass 
                         update_counter_panel('finished', st.session_state.count_pose_g, st.session_state.n_poses, st.session_state.count_rep, st.session_state.count_set)
-
+                        cv2.rectangle(image, (r4B_x, r4B_y), (r4B_x + r4B_w, r4B_y + r4B_h), r4B_rgb, r4B_thickness)
+                        cv2.putText(image, "EXPECTED POSE",(310,20),cv2.FONT_HERSHEY_SIMPLEX,0.4,(70,70,70),1, cv2.LINE_AA)
                         cv2.rectangle(image, (50,180), (600,300), (0,255,0), -1)
                         cv2.putText(image, 'EXERCISE FINISHED!', (100,250), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255), 3, cv2.LINE_AA)
                         stframe.image(image,channels = 'BGR',use_column_width=True)
@@ -3034,23 +2978,6 @@ if authentication_status:
                 for radar in radars_img:
                     st.plotly_chart(radar, use_container_width=True)
 
-                
-                #pose_1_sa, pose_2_sa, pose_3_sa = st.columns(3)
-                #with pose_1_sa:
-                #    img_path1 = "./02. trainers/" + id_exercise + "/images/" + id_exercise + "1_results.png"
-                #    id_pose=1
-                #    img1 = dashboard.add_results_angle_img(img_path1, id_exercise, id_pose, df_results, 
-                #                                        st.session_state.articulaciones, st.session_state.posfijo)
-                #    st.image(img1)
-                    
-                #    st.image("./02. trainers/" + id_exercise + "/images/" + id_exercise + "1_results.png")
-                    
-                #with pose_2_sa:
-                #    a=0
-                #with pose_3_sa:
-                #    a=0
-
-
             # 3.📐 💰 SISTEMA COSTOS                
             with system_cost:
                 st.markdown("**💰 SISTEMA COSTOS**", unsafe_allow_html=True)
@@ -3075,9 +3002,3 @@ if authentication_status:
                     st.plotly_chart(cost_im, use_container_width=True)
 
             st.markdown("<hr/>", unsafe_allow_html=True)
-
-
-
-            
-            
-            
