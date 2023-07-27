@@ -7,19 +7,35 @@ import Libraries.ML_Functions.ml_model_train as ml_model_train
 import Libraries.ML_Functions.ml_model_test as ml_model_test
 
 def load_ml_tools():
-    #tab_create_pose_dataset, tab_ml_model_train, tab_ml_model_test = st.tabs(["💾CREATE POSE DATASET", "🤖 ML MODEL TRAINING", "🦾 ML MODEL TEST"])
-    tab_ml_model_train, tab_ml_model_test = st.tabs(["🤖 ML MODEL TRAINING", "🦾 ML MODEL TEST"])
-    #with tab_create_pose_dataset:
-    #    st.markdown("**💾 CREATE POSE DATASET**", unsafe_allow_html=True)        
-    #    st.markdown("<br>", unsafe_allow_html=True)
-
-    #    st.markdown("1️⃣ UPLOAD 3 TRAINERS PNG FILES:", unsafe_allow_html=True)
-    #    id_exercise = st.selectbox("Choose exercise", ml_crea_pos_dt.list_exercise())
-    #    uploaded_png_files = st.file_uploader("Choose a PNG file for Trainer 1", type= ['png'], accept_multiple_files=True )
-    #    st.markdown("------", unsafe_allow_html=True)
-    #    st.markdown("2️⃣ PROCESSING IMAGES  🔸  3️⃣ GENERATE TRAINERS CSV FILES:", unsafe_allow_html=True)
-    #    st.markdown("<br>", unsafe_allow_html=True)
-    #    ml_crea_pos_dt.main_function(uploaded_png_files, id_exercise)
+    tab_create_pose_dataset, tab_ml_model_train, tab_ml_model_test = st.tabs(["💾CREATE POSE DATASET", "🤖 ML MODEL TRAINING", "🦾 ML MODEL TEST"])
+    with tab_create_pose_dataset:
+        st.markdown("**📹 SUBMIT A VIDEO**", unsafe_allow_html=True)  
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("1️⃣ SELECT EXERCISE:", unsafe_allow_html=True)
+        id_exercise = st.selectbox("Choose exercise", ml_crea_pos_dt.list_exercise())
+        st.markdown("<br>", unsafe_allow_html=True)
+        mp4_files = st.file_uploader("Choose a MP4 file", type= ['mp4'], accept_multiple_files=True  )
+        st.markdown("<br>", unsafe_allow_html=True)
+        save_video_button = st.button("SAVE VIDEO")
+        st.markdown("2️⃣ SAVING VIDEO", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        if save_video_button:
+            ml_crea_pos_dt.saving_video(id_exercise, mp4_files)
+        st.markdown("------", unsafe_allow_html=True)
+        st.markdown("**💾 CREATE POSE DATASET**", unsafe_allow_html=True)        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.markdown("1️⃣ SELECT EXERCISES:", unsafe_allow_html=True)
+        id_exercises = st.multiselect('Choose exercise:', ['bird_dog', 'curl_up', 'forward_lunge', 'front_plank', 'push_up'])
+        st.markdown("<br >", unsafe_allow_html=True)
+        generate_dataset = st.button("GENERATE DATASET")
+        st.markdown("<br >", unsafe_allow_html=True)
+        st.markdown("------", unsafe_allow_html=True)
+        st.markdown("2️⃣ PROCESSING VIDEOS  🔸  3️⃣ GENERATE CSV FILE:", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        if generate_dataset:
+            ml_crea_pos_dt.main_function(id_exercises)
     
     with tab_ml_model_train:
         st.markdown("**🤖 ML MODEL TRAINING**", unsafe_allow_html=True)
@@ -31,8 +47,6 @@ def load_ml_tools():
         if uploaded_csv_file is not None:
             dataframe = pd.read_csv(uploaded_csv_file, sep=',')
             st.dataframe(dataframe)
-
-            ################
             st.markdown("------", unsafe_allow_html=True)
             st.markdown("<br >", unsafe_allow_html=True)
             st.markdown("2️⃣ CHOOSE MODEL'S TARGET & FEATURES:", unsafe_allow_html=True)
@@ -57,13 +71,10 @@ def load_ml_tools():
                 st.warning("We recommend including only columns 'X', 'Y', 'Z' & 'V' (Not 'video', 'frames_per_sec', 'frame_count')", icon='⚠️')
             
             st.markdown("------", unsafe_allow_html=True)
-            #st.stop()
-            if(generate_model):
-            ################            
+            if(generate_model):            
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("3️⃣ MODEL PKL FILE TO BE GENERATED:", unsafe_allow_html=True)
                 pkl_time_stamp = time.strftime("%Y%m%d_%H%M%S")
-                #path_pkl = './model_weights/'
                 path_pkl = './99. testing_resourses/outputs/'
                 file_pkl = 'weights_body_language_{}.pkl'.format(pkl_time_stamp)
                 path_file_pkl = path_pkl + file_pkl
@@ -96,7 +107,6 @@ def load_ml_tools():
             btn_test_model = st.button("Test Model")
             
             if (btn_test_model):
-                #path_pkl = './model_weights/'
                 path_pkl = './99. testing_resourses/outputs/'
                 path_file_pkl = path_pkl + file_pkl
 
