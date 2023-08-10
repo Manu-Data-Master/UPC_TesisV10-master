@@ -33,7 +33,8 @@ def main_function(id_exercises):
         video_files = os.listdir(path_videos_input)
         video_files_list = []
         for video_file in video_files:
-            video_files_list.append(video_file)
+            if video_file.endswith(".mp4"):
+                video_files_list.append(video_file)
 
         for video in video_files_list:
             st.markdown("<br >", unsafe_allow_html=True)
